@@ -16,7 +16,7 @@
 |---|---|---|
 | Create | `vitest.config.ts` | Vitest config with v8 coverage and 80% thresholds |
 | Create | `lib/__tests__/prompts.test.mjs` | Smoke + unit tests for all pure helpers |
-| Create | `eslint.config.mjs` | ESLint 9 flat config via FlatCompat → next/core-web-vitals |
+| Create | `eslint.config.mjs` | ESLint 9 flat config importing `eslint-config-next/core-web-vitals` directly |
 | Create | `.github/workflows/ci.yml` | CI: lint → typecheck → test:coverage → build |
 | Create | `.husky/pre-commit` | Runs lint-staged on commit |
 | Modify | `package.json` | New scripts + devDependencies |
