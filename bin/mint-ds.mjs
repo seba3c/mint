@@ -3,6 +3,7 @@
 // Requires Node 20+ for fs.promises.readdir({ recursive: true }) and global fetch.
 
 import { promises as fs } from 'node:fs'
+import { createRequire } from 'node:module'
 import path from 'node:path'
 import process from 'node:process'
 import {
@@ -16,7 +17,8 @@ import {
   stripFences,
 } from '../lib/prompts.mjs'
 
-const VERSION = '0.1.0'
+const require = createRequire(import.meta.url)
+const { version: VERSION } = require('../package.json')
 const SOURCE_EXTS = new Set(['.css', '.scss', '.sass', '.less', '.html', '.htm'])
 const DEFAULT_TOKENS_FILE = 'mint-ds.tokens.json'
 const MAX_CSS_CHARS = 120_000
