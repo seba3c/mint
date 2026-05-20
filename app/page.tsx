@@ -9,23 +9,11 @@ import ExportPanel from '@/components/ExportPanel'
 import CoffeeLoader from '@/components/CoffeeLoader'
 import StepBar from '@/components/StepBar'
 import CliPromo from '@/components/CliPromo'
+import { readAuditCache, writeAuditCache, readResolveCache, writeResolveCache, clearPlaygroundCache } from '@/lib/playground-cache'
 
 type WizardStep = 'input' | 'audit' | 'tokens'
 type PreviewTab = 'visual' | 'json' | 'export'
 type Flavor = 'playground' | 'cli'
-
-function preprocessCssClient(css: string): string {
-  return css
-    .replace(/\/\*[\s\S]*?\*\//g, ' ')
-    .replace(/\/\/[^\n]*/g, ' ')
-    .replace(/\s+/g, ' ')
-    .trim()
-}
-
-async function hashContent(content: string): Promise<string> {
-  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(content))
-  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('')
-}
 
 interface AuditHistoryEntry {
   id: string
@@ -114,19 +102,13 @@ export default function Home() {
     setAuditFromCache(false)
 
     try {
-      const hash = await hashContent(preprocessCssClient(inputCss))
-      const cacheKey = `mint-audit-cache-${hash}`
-
-      try {
-        const hit = localStorage.getItem(cacheKey)
-        if (hit) {
-          const { audit: cachedAudit } = JSON.parse(hit)
-          setAudit(cachedAudit)
-          setStep('audit')
-          setAuditFromCache(true)
-          return
-        }
-      } catch { /* ignore corrupt cache */ }
+      const cachedAudit = await readAuditCache(inputCss)
+      if (cachedAudit) {
+        setAudit(cachedAudit)
+        setStep('audit')
+        setAuditFromCache(true)
+        return
+      }
 
       const res = await fetch('/api/audit', {
         method: 'POST',
@@ -136,9 +118,7 @@ export default function Home() {
       const data = await res.json()
       if (data.error) throw new Error(data.error)
 
-      try {
-        localStorage.setItem(cacheKey, JSON.stringify({ audit: data.audit, savedAt: new Date().toISOString() }))
-      } catch { /* storage full or disabled */ }
+      await writeAuditCache(inputCss, data.audit)
 
       const entry: AuditHistoryEntry = {
         id: Date.now().toString(),
@@ -163,20 +143,14 @@ export default function Home() {
     setResolveFromCache(false)
 
     try {
-      const hash = await hashContent(preprocessCssClient(css) + '|' + JSON.stringify(decisions))
-      const cacheKey = `mint-resolve-cache-${hash}`
-
-      try {
-        const hit = localStorage.getItem(cacheKey)
-        if (hit) {
-          const { tokens: cachedTokens } = JSON.parse(hit)
-          setTokens(cachedTokens)
-          setStep('tokens')
-          setPreviewTab('visual')
-          setResolveFromCache(true)
-          return
-        }
-      } catch { /* ignore corrupt cache */ }
+      const cachedTokens = await readResolveCache(css, decisions)
+      if (cachedTokens) {
+        setTokens(cachedTokens)
+        setStep('tokens')
+        setPreviewTab('visual')
+        setResolveFromCache(true)
+        return
+      }
 
       const res = await fetch('/api/resolve', {
         method: 'POST',
@@ -186,9 +160,7 @@ export default function Home() {
       const data = await res.json()
       if (data.error) throw new Error(data.error)
 
-      try {
-        localStorage.setItem(cacheKey, JSON.stringify({ tokens: data.tokens, savedAt: new Date().toISOString() }))
-      } catch { /* storage full or disabled */ }
+      await writeResolveCache(css, decisions, data.tokens)
 
       setTokens(data.tokens)
       setStep('tokens')
@@ -214,12 +186,7 @@ export default function Home() {
   const clearHistory = () => {
     setAuditHistory([])
     setHistoryOpen(false)
-    try {
-      const keys = Object.keys(localStorage).filter(
-        k => k.startsWith('mint-audit-cache-') || k.startsWith('mint-resolve-cache-')
-      )
-      keys.forEach(k => localStorage.removeItem(k))
-    } catch { /* ignore */ }
+    clearPlaygroundCache()
   }
 
   const reset = () => {
