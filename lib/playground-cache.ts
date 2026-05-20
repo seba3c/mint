@@ -5,18 +5,8 @@ export { preprocessCss }
 const AUDIT_PREFIX = 'mint-audit-cache-'
 const RESOLVE_PREFIX = 'mint-resolve-cache-'
 
-// `crypto` is a browser global but is not auto-globalised in the Vitest node
-// environment. Resolve it lazily so the module loads in both runtimes without
-// top-level await (which ES2017 target does not support).
-async function getSubtleCrypto(): Promise<SubtleCrypto> {
-  if (typeof crypto !== 'undefined') return crypto.subtle
-  const { webcrypto } = await import('node:crypto')
-  return webcrypto.subtle as unknown as SubtleCrypto
-}
-
 export async function hashContent(content: string): Promise<string> {
-  const subtle = await getSubtleCrypto()
-  const buf = await subtle.digest('SHA-256', new TextEncoder().encode(content))
+  const buf = await globalThis.crypto.subtle.digest('SHA-256', new TextEncoder().encode(content))
   return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('')
 }
 

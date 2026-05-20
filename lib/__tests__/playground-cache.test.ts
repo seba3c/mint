@@ -1,3 +1,4 @@
+import { webcrypto } from 'node:crypto'
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import {
   preprocessCss,
@@ -39,6 +40,7 @@ function makeLocalStorageMock() {
 
 const localStorageMock = makeLocalStorageMock()
 
+vi.stubGlobal('crypto', webcrypto)
 vi.stubGlobal('localStorage', localStorageMock)
 
 beforeEach(() => {
