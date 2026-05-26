@@ -1,0 +1,37 @@
+{
+  "_meta": {
+    "recordedAt": "2026-05-26T10:29:31.958Z",
+    "scenario": "audit-200-simple-css"
+  },
+  "response": {
+    "status": 200,
+    "ok": true,
+    "body": {
+      "model": "claude-sonnet-4-20250514",
+      "id": "msg_01TQwDvwRr9A8tM3jebAYESH",
+      "type": "message",
+      "role": "assistant",
+      "content": [
+        {
+          "type": "text",
+          "text": "{\n  \"brand\": \"\",\n  \"chaosScore\": 1,\n  \"summary\": \"The codebase is minimal with only 1 color cluster and no spacing values, indicating good design consistency.\",\n  \"colorClusters\": [\n    {\n      \"id\": \"cluster-0\",\n      \"suggestedName\": \"error\",\n      \"representative\": \"#ff0000\",\n      \"samples\": [\n        { \"hex\": \"#ff0000\", \"usageCount\": 1, \"contexts\": [\"body\"] }\n      ]\n    }\n  ],\n  \"fonts\": [],\n  \"spacing\": {\n    \"found\": [],\n    \"suggestedScale\": {},\n    \"nonScaleValues\": []\n  }\n}"
+        }
+      ],
+      "stop_reason": "end_turn",
+      "stop_sequence": null,
+      "stop_details": null,
+      "usage": {
+        "input_tokens": 1559,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 174,
+        "service_tier": "standard",
+        "inference_geo": "not_available"
+      }
+    }
+  }
+}
