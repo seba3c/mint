@@ -40,6 +40,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
+    "test:record": "RECORD_FIXTURES=1 vitest run",
     "lint": "next lint",
     "typecheck": "tsc --noEmit",
     "prepare": "husky",
