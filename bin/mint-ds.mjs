@@ -18,6 +18,7 @@ import {
   callAnthropic,
   stripFences,
 } from '../lib/prompts.mjs'
+import { settings } from '../lib/settings.mjs'
 
 const require = createRequire(import.meta.url)
 const { version: VERSION } = require('../package.json')
@@ -127,7 +128,7 @@ const API_KEY_HELP =
 
 function resolveApiKey(flags) {
   const fromFlag = typeof flags['api-key'] === 'string' ? flags['api-key'] : null
-  return fromFlag || process.env.ANTHROPIC_API_KEY || null
+  return fromFlag || settings.anthropicApiKey || null
 }
 
 async function* walk(dir) {

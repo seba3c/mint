@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { settings } from '@/lib/settings.mjs'
 
 export async function POST(req: NextRequest) {
   const { html } = await req.json()
@@ -57,7 +58,7 @@ Rules:
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'x-api-key': process.env.ANTHROPIC_API_KEY!,
+        'x-api-key': settings.anthropicApiKey!,
         'anthropic-version': '2023-06-01',
       },
       body: JSON.stringify({

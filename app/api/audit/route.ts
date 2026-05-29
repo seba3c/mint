@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { AUDIT_SYSTEM_PROMPT, buildAuditPrompt, callAnthropic, stripFences } from '@/lib/prompts.mjs'
+import { settings } from '@/lib/settings.mjs'
 
 export async function POST(req: NextRequest) {
   const { css } = await req.json()
@@ -10,7 +11,7 @@ export async function POST(req: NextRequest) {
 
   try {
     const text = await callAnthropic({
-      apiKey: process.env.ANTHROPIC_API_KEY,
+      apiKey: settings.anthropicApiKey,
       system: AUDIT_SYSTEM_PROMPT,
       prompt: buildAuditPrompt(css),
       maxTokens: 3000,

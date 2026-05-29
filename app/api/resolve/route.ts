@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import type { UserDecisions } from '@/lib/types'
 import { buildResolvePrompt, callAnthropic, stripFences } from '@/lib/prompts.mjs'
+import { settings } from '@/lib/settings.mjs'
 
 export async function POST(req: NextRequest) {
   const { css, decisions }: { css: string; decisions: UserDecisions } = await req.json()
@@ -11,7 +12,7 @@ export async function POST(req: NextRequest) {
 
   try {
     const text = await callAnthropic({
-      apiKey: process.env.ANTHROPIC_API_KEY,
+      apiKey: settings.anthropicApiKey,
       prompt: buildResolvePrompt(css, decisions),
       maxTokens: 4000,
     })
