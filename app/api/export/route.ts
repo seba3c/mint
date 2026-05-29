@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import type { DSTokens, ExportTarget } from '@/lib/types'
-import { buildExportPrompt, callAnthropic, stripFences } from '@/lib/prompts.mjs'
+import { buildExportPrompt, stripFences } from '@/lib/prompts.mjs'
+import { getLlmProvider } from '@/lib/llm-providers.mjs'
 import { settings } from '@/lib/settings.mjs'
 
 export async function POST(req: NextRequest) {
@@ -12,11 +13,8 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    const text = await callAnthropic({
-      apiKey: settings.anthropicApiKey,
-      prompt,
-      maxTokens: 6000,
-    })
+    const provider = getLlmProvider(settings)
+    const text = await provider.export(prompt)
     return NextResponse.json({ code: stripFences(text) })
   } catch (err) {
     console.error('Export error:', err)

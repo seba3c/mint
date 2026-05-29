@@ -15,9 +15,9 @@ import {
   EXPORT_OUTPUT,
   ADVERTISED_TARGETS,
   resolveTarget,
-  callAnthropic,
   stripFences,
 } from '../lib/prompts.mjs'
+import { getLlmProvider } from '../lib/llm-providers.mjs'
 import { settings } from '../lib/settings.mjs'
 
 const require = createRequire(import.meta.url)
@@ -117,18 +117,6 @@ function parseFlags(argv) {
     }
   }
   return { flags, rest }
-}
-
-const API_KEY_HELP =
-  'ANTHROPIC_API_KEY is required. Set it in your environment or pass --api-key <value>.\n' +
-  '  macOS/Linux:  export ANTHROPIC_API_KEY=sk-ant-...\n' +
-  '  PowerShell:   $env:ANTHROPIC_API_KEY = "sk-ant-..."\n' +
-  '  Windows CMD:  set ANTHROPIC_API_KEY=sk-ant-...\n' +
-  '  Get a key at https://console.anthropic.com'
-
-function resolveApiKey(flags) {
-  const fromFlag = typeof flags['api-key'] === 'string' ? flags['api-key'] : null
-  return fromFlag || settings.anthropicApiKey || null
 }
 
 async function* walk(dir) {
@@ -233,11 +221,9 @@ async function cmdAudit(argv) {
     }
   }
 
-  const apiKey = resolveApiKey(flags)
-  if (!apiKey) die(API_KEY_HELP)
-
+  const provider = getLlmProvider(settings, flags)
   log(styles.cyan('→') + ' Auditing with Claude…')
-  const auditText = await callAnthropic({ apiKey, prompt: buildAuditPrompt(css), maxTokens: 3000 })
+  const auditText = await provider.audit(buildAuditPrompt(css))
   let audit
   try {
     audit = JSON.parse(stripFences(auditText))
@@ -251,11 +237,7 @@ async function cmdAudit(argv) {
   }
 
   log(styles.cyan('→') + ' Resolving tokens…')
-  const tokensText = await callAnthropic({
-    apiKey,
-    prompt: buildResolvePrompt(css, defaultDecisions(audit)),
-    maxTokens: 4000,
-  })
+  const tokensText = await provider.parse(buildResolvePrompt(css, defaultDecisions(audit)))
   let tokens
   try {
     tokens = JSON.parse(stripFences(tokensText))
@@ -311,9 +293,6 @@ async function cmdExport(argv) {
     die(`Unknown --target "${targetInput}". Try one of: ${ADVERTISED_TARGETS.join(', ')}`)
   }
 
-  const apiKey = resolveApiKey(flags)
-  if (!apiKey) die(API_KEY_HELP)
-
   const tokensPath = String(flags.tokens || DEFAULT_TOKENS_FILE)
   const tokensRaw = await fs.readFile(tokensPath, 'utf8').catch(() => null)
   if (tokensRaw === null) {
@@ -328,9 +307,8 @@ async function cmdExport(argv) {
   }
 
   log(styles.cyan('→') + ` Generating ${styles.bold(target)}…`)
-  const code = stripFences(
-    await callAnthropic({ apiKey, prompt: buildExportPrompt(tokens, target), maxTokens: 6000 })
-  )
+  const provider = getLlmProvider(settings, flags)
+  const code = stripFences(await provider.export(buildExportPrompt(tokens, target)))
 
   if (flags.stdout) {
     process.stdout.write(code + '\n')

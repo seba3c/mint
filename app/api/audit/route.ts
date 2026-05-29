@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { AUDIT_SYSTEM_PROMPT, buildAuditPrompt, callAnthropic, stripFences } from '@/lib/prompts.mjs'
+import { buildAuditPrompt, stripFences } from '@/lib/prompts.mjs'
+import { getLlmProvider } from '@/lib/llm-providers.mjs'
 import { settings } from '@/lib/settings.mjs'
 
 export async function POST(req: NextRequest) {
@@ -10,12 +11,8 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    const text = await callAnthropic({
-      apiKey: settings.anthropicApiKey,
-      system: AUDIT_SYSTEM_PROMPT,
-      prompt: buildAuditPrompt(css),
-      maxTokens: 3000,
-    })
+    const provider = getLlmProvider(settings)
+    const text = await provider.audit(buildAuditPrompt(css))
     const audit = JSON.parse(stripFences(text))
     return NextResponse.json({ audit })
   } catch (err) {

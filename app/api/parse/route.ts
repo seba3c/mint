@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { getLlmProvider } from '@/lib/llm-providers.mjs'
 import { settings } from '@/lib/settings.mjs'
 
 export async function POST(req: NextRequest) {
@@ -54,22 +55,8 @@ Rules:
 - Keep color names semantic (primary, secondary, accent, background, surface, text, muted, etc.)`
 
   try {
-    const res = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': settings.anthropicApiKey!,
-        'anthropic-version': '2023-06-01',
-      },
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
-        max_tokens: 4000,
-        messages: [{ role: 'user', content: prompt }],
-      }),
-    })
-
-    const data = await res.json()
-    const raw: string = data.content?.find((b: { type: string }) => b.type === 'text')?.text ?? ''
+    const provider = getLlmProvider(settings)
+    const raw = await provider.parse(prompt)
     const clean = raw.replace(/^```json\n?/m, '').replace(/\n?```$/m, '').trim()
     const tokens = JSON.parse(clean)
 
