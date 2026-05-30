@@ -15,10 +15,9 @@ import {
   EXPORT_OUTPUT,
   ADVERTISED_TARGETS,
   resolveTarget,
-  stripFences,
 } from '../lib/prompts.mjs'
-import { getLlmProvider } from '../lib/llm-providers.mjs'
-import { settings } from '../lib/settings.mjs'
+import { getCssAuditor } from '../lib/css-auditor.mjs'
+
 
 const require = createRequire(import.meta.url)
 const { version: VERSION } = require('../package.json')
@@ -221,15 +220,9 @@ async function cmdAudit(argv) {
     }
   }
 
-  const provider = getLlmProvider(settings, flags)
-  log(styles.cyan('→') + ' Auditing with Claude…')
-  const auditText = await provider.audit(buildAuditPrompt(css))
-  let audit
-  try {
-    audit = JSON.parse(stripFences(auditText))
-  } catch {
-    die('Could not parse audit JSON from Claude response')
-  }
+  const cssAuditor = getCssAuditor(flags)
+  log(styles.cyan('→') + ' Auditing CSS...')
+  const audit = await cssAuditor.audit(buildAuditPrompt(css))
 
   if (reportFile) {
     await fs.writeFile(reportFile, JSON.stringify(audit, null, 2) + '\n', 'utf8')
@@ -237,12 +230,11 @@ async function cmdAudit(argv) {
   }
 
   log(styles.cyan('→') + ' Resolving tokens…')
-  const tokensText = await provider.parse(buildResolvePrompt(css, defaultDecisions(audit)))
   let tokens
   try {
-    tokens = JSON.parse(stripFences(tokensText))
+    tokens = await cssAuditor.parse(buildResolvePrompt(css, defaultDecisions(audit)))
   } catch {
-    die('Could not parse tokens JSON from Claude response')
+    die('Error parsing response')
   }
 
   if (!noCache) {
@@ -307,8 +299,8 @@ async function cmdExport(argv) {
   }
 
   log(styles.cyan('→') + ` Generating ${styles.bold(target)}…`)
-  const provider = getLlmProvider(settings, flags)
-  const code = stripFences(await provider.export(buildExportPrompt(tokens, target)))
+  const cssAuditor = getCssAuditor(flags)
+  const code = await cssAuditor.export(buildExportPrompt(tokens, target))
 
   if (flags.stdout) {
     process.stdout.write(code + '\n')

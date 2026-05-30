@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getLlmProvider } from '@/lib/llm-providers.mjs'
-import { settings } from '@/lib/settings.mjs'
+import { getCssAuditor } from '@/lib/css-auditor.mjs'
+
 
 export async function POST(req: NextRequest) {
   const { html } = await req.json()
@@ -55,14 +55,12 @@ Rules:
 - Keep color names semantic (primary, secondary, accent, background, surface, text, muted, etc.)`
 
   try {
-    const provider = getLlmProvider(settings)
-    const raw = await provider.parse(prompt)
-    const clean = raw.replace(/^```json\n?/m, '').replace(/\n?```$/m, '').trim()
-    const tokens = JSON.parse(clean)
-
-    return NextResponse.json({ tokens })
+    const cssAuditor = getCssAuditor()
+    const parseResult = await cssAuditor.parse(prompt)
+    return NextResponse.json({ parseResult })
   } catch (err) {
-    console.error('Parse error:', err)
-    return NextResponse.json({ error: 'Error al parsear el HTML' }, { status: 500 })
+    const errorMsg = 'Error parsing result'
+    console.error(errorMsg, err)
+    return NextResponse.json({ error: errorMsg }, { status: 500 })
   }
 }

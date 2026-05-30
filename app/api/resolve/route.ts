@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import type { UserDecisions } from '@/lib/types'
-import { buildResolvePrompt, stripFences } from '@/lib/prompts.mjs'
-import { getLlmProvider } from '@/lib/llm-providers.mjs'
-import { settings } from '@/lib/settings.mjs'
+import { buildResolvePrompt } from '@/lib/prompts.mjs'
+import { getCssAuditor } from '@/lib/css-auditor.mjs'
 
 export async function POST(req: NextRequest) {
   const { css, decisions }: { css: string; decisions: UserDecisions } = await req.json()
@@ -12,12 +11,12 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    const provider = getLlmProvider(settings)
-    const text = await provider.parse(buildResolvePrompt(css, decisions))
-    const tokens = JSON.parse(stripFences(text))
-    return NextResponse.json({ tokens })
+    const auditor = getCssAuditor()
+    const parseResult = await auditor.parse(buildResolvePrompt(css, decisions))
+    return NextResponse.json({ parseResult })
   } catch (err) {
-    console.error('Resolve error:', err)
-    return NextResponse.json({ error: 'Error generating tokens' }, { status: 500 })
+    const errorMsg = 'Error parsing result'
+    console.error(errorMsg, err)
+    return NextResponse.json({ error: errorMsg }, { status: 500 })
   }
 }

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { buildAuditPrompt, stripFences } from '@/lib/prompts.mjs'
-import { getLlmProvider } from '@/lib/llm-providers.mjs'
-import { settings } from '@/lib/settings.mjs'
+import { buildAuditPrompt } from '@/lib/prompts.mjs'
+import { getCssAuditor } from '@/lib/css-auditor.mjs'
+
 
 export async function POST(req: NextRequest) {
   const { css } = await req.json()
@@ -11,12 +11,12 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    const provider = getLlmProvider(settings)
-    const text = await provider.audit(buildAuditPrompt(css))
-    const audit = JSON.parse(stripFences(text))
-    return NextResponse.json({ audit })
+    const cssAuditor = getCssAuditor()
+    const auditResult = await cssAuditor.audit(buildAuditPrompt(css))
+    return NextResponse.json({ auditResult })
   } catch (err) {
-    console.error('Audit error:', err)
-    return NextResponse.json({ error: 'Error auditing CSS' }, { status: 500 })
+    const errorMsg = 'Error auditing CSS'
+    console.error(errorMsg, err)
+    return NextResponse.json({ error: errorMsg }, { status: 500 })
   }
 }
