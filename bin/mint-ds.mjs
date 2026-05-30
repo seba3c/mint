@@ -229,7 +229,7 @@ async function cmdAudit(argv) {
     log(styles.dim(`  audit report → ${reportFile}`))
   }
 
-  log(styles.cyan('→') + ' Resolving tokens…')
+  log(styles.cyan('→') + ' Processing results...')
   let tokens
   try {
     tokens = await cssAuditor.parse(buildResolvePrompt(css, defaultDecisions(audit)))
