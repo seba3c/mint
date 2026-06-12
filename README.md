@@ -216,14 +216,14 @@ npx mint-ds audit ./src/styles --api-key sk-ant-...
 
 Useful for one-off runs, CI jobs, or when you don't want the key persisted in your shell.
 
-**Option 2 — set the `ANTHROPIC_API_KEY` env var.** Syntax depends on your shell:
+**Option 2 — set the `API_KEY` env var.** Syntax depends on your shell:
 
 | Shell | Command |
 |-------|---------|
-| bash / zsh / sh (macOS, Linux, WSL) | `export ANTHROPIC_API_KEY=sk-ant-...` |
-| fish | `set -gx ANTHROPIC_API_KEY sk-ant-...` |
-| PowerShell (Windows / pwsh) | `$env:ANTHROPIC_API_KEY = "sk-ant-..."` |
-| Windows CMD | `set ANTHROPIC_API_KEY=sk-ant-...` |
+| bash / zsh / sh (macOS, Linux, WSL) | `export API_KEY=sk-ant-...` |
+| fish | `set -gx API_KEY sk-ant-...` |
+| PowerShell (Windows / pwsh) | `$env:API_KEY = "sk-ant-..."` |
+| Windows CMD | `set API_KEY=sk-ant-...` |
 
 These commands set the key only for the current shell session. To persist it, add the line to your shell rc file (`~/.bashrc`, `~/.zshrc`, `~/.config/fish/config.fish`, your PowerShell `$PROFILE`, etc.) or use the system Environment Variables dialog on Windows.
 
@@ -277,7 +277,7 @@ The CLI runs straight from a clone:
 
 ```bash
 git clone https://github.com/nujovich/mint.git && cd mint
-export ANTHROPIC_API_KEY=sk-ant-...
+export API_KEY=sk-ant-...
 node bin/mint-ds.mjs audit ./examples/site
 node bin/mint-ds.mjs export --target tailwind
 # or `npm link` to expose `mint-ds` globally for testing.
@@ -312,7 +312,7 @@ git clone https://github.com/your-org/mint.git
 cd mint
 npm install
 cp .env.local.example .env.local
-# Add your key: ANTHROPIC_API_KEY=sk-ant-...
+# Add your key: API_KEY=sk-ant-...
 npm run dev
 ```
 
@@ -322,7 +322,7 @@ Open [http://localhost:3000](http://localhost:3000).
 
 | Variable | Required | Description |
 |----------|----------|-------------|
-| `ANTHROPIC_API_KEY` | Yes | Anthropic API key — get one at [console.anthropic.com](https://console.anthropic.com) |
+| `API_KEY` | Yes | Anthropic API key — get one at [console.anthropic.com](https://console.anthropic.com) |
 
 ## Project structure
 
